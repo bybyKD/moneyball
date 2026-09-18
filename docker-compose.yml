@@ -1,0 +1,55 @@
+services:
+  postgres:
+    image: pgvector/pgvector:pg16
+    container_name: moneyball-postgres
+    environment:
+      POSTGRES_USER: moneyball
+      POSTGRES_PASSWORD: moneyball
+      POSTGRES_DB: moneyball
+    ports:
+      - "54320:5432"
+    volumes:
+      - moneyball_pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U moneyball -d moneyball"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    restart: unless-stopped
+
+  postgres_test:
+    image: pgvector/pgvector:pg16
+    container_name: moneyball-postgres-test
+    environment:
+      POSTGRES_USER: moneyball
+      POSTGRES_PASSWORD: moneyball
+      POSTGRES_DB: moneyball_test
+    ports:
+      - "54321:5432"
+    volumes:
+      - moneyball_pgtest:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U moneyball -d moneyball_test"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    restart: unless-stopped
+
+  redis:
+    image: redis:7-alpine
+    container_name: moneyball-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - moneyball_redis:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+    restart: unless-stopped
+
+volumes:
+  moneyball_pgdata:
+  moneyball_pgtest:
+  moneyball_redis:
