@@ -1,0 +1,17 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --mb-bg: #0b1220;
+  --mb-bg-soft: #111a2e;
+  --mb-border: #1f2c44;
+  --mb-text: #e6ecf5;
+  --mb-muted: #8fa0bd;
+}
+
+html,
+body {
+  background: var(--mb-bg);
+  color: var(--mb-text);
+}
