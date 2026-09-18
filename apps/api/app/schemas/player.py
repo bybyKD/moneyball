@@ -1,8 +1,7 @@
-"""Player response schemas (spec §7). Full advanced-metric fields arrive with
-the analytics phases (per-90, percentile buckets); duration/sample fields are
-already present so the UI can show Moneyball confidence from day one."""
+"""Player response schemas (spec §7). Matches the players table now; advanced
+per-90 / percentile fields arrive with the analytics phases."""
 
-from datetime import datetime
+from datetime import date
 
 from pydantic import BaseModel, ConfigDict
 
@@ -11,16 +10,12 @@ class PlayerOut(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
     id: int
-    full_name: str
     slug: str
-    age: int
-    birth_date: datetime | None
-    nationality: str
-    primary_position: str
-    preferred_foot: str | None
+    full_name: str
+    date_of_birth: date
+    nationality_code: str
+    nationality_name: str
     height_cm: int | None
-    club_name: str | None
-    league_name: str | None
-    market_value_eur: int | None
-    value_trend: str | None  # rising | stable | falling | unknown
-    updated_at: datetime | None
+    preferred_foot: str | None
+    primary_position: str
+    current_club_id: int | None
