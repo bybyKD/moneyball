@@ -251,6 +251,22 @@ async def run(n_players: int) -> None:
                     shots_on_target=max(0, int(rng.gauss(0, 1.6 * 6) * 1.1)),
                     xg=round(max(0.0, rng.gauss(0, 18 * 0.7)), 2),
                     xa=round(max(0.0, rng.gauss(0, 12 * 0.6)), 2),
+                    touches=max(0, int(rng.gauss(0, 55 * 6 / 9) * rng.uniform(0.7, 1.3))),
+                    passes_attempted=max(0, int(rng.gauss(0, 42 * 6 / 9) * rng.uniform(0.7, 1.3))),
+                    passes_completed=max(0, int(rng.gauss(0, 38 * 6 / 9) * rng.uniform(0.7, 1.3))),
+                    key_passes=max(0, int(rng.gauss(0, 3.5 * 6 / 9) * rng.uniform(0.5, 1.5))),
+                    progressive_passes=max(0, int(rng.gauss(0, 8 * 6 / 9) * rng.uniform(0.5, 1.5))),
+                    carries=max(0, int(rng.gauss(0, 30 * 6 / 9) * rng.uniform(0.7, 1.3))),
+                    progressive_carries=max(0, int(rng.gauss(0, 10 * 6 / 9) * rng.uniform(0.5, 1.5))),
+                    successful_dribbles=max(0, int(rng.gauss(0, 6 * 6 / 9) * rng.uniform(0.5, 1.5))),
+                    interceptions=max(0, int(rng.gauss(0, 5 * 6 / 9) * rng.uniform(0.5, 1.5))),
+                    tackles=max(0, int(rng.gauss(0, 7 * 6 / 9) * rng.uniform(0.5, 1.5))),
+                    ball_recoveries=max(0, int(rng.gauss(0, 12 * 6 / 9) * rng.uniform(0.5, 1.5))),
+                    clearances=max(0, int(rng.gauss(0, 6 * 6 / 9) * rng.uniform(0.5, 1.5))),
+                    defensive_duels_won=max(0, int(rng.gauss(0, 4 * 6 / 9) * rng.uniform(0.5, 1.5))),
+                    defensive_duels_total=max(1, int(rng.gauss(0, 6 * 6 / 9) * rng.uniform(0.5, 1.5)) + 1),
+                    aerial_duels_won=max(0, int(rng.gauss(0, 3 * 6 / 9) * rng.uniform(0.5, 1.5))),
+                    aerial_duels_total=max(1, int(rng.gauss(0, 5 * 6 / 9) * rng.uniform(0.5, 1.5)) + 1),
                 )
             )
             if len(stat_rows) >= 1800:

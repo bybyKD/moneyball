@@ -76,3 +76,14 @@ def test_login_sets_cookie(server):
 def test_unauthenticated_me_returns_401(server):
     r = httpx.get(f"{BASE}/users/me", timeout=5)
     assert r.status_code == 401
+
+def test_player_analytics(server):
+    r = httpx.get(f"{BASE}/players?limit=1", timeout=5)
+    assert r.status_code == 200, r.text
+    pid = r.json()[0]["id"]
+    a = httpx.get(f"{BASE}/players/{pid}/analytics", timeout=6)
+    assert a.status_code == 200, a.text
+    body = a.json()["result"]
+    assert body["score"] is not None
+    assert body["market_value_eur"] is not None
+    assert isinstance(body["percentiles"], dict)
