@@ -10,7 +10,6 @@ import secrets
 from datetime import UTC, datetime, timedelta
 
 import jwt
-
 from apps.api.app.core.config import settings
 
 PBKDF2_ITERATIONS = 600_000

@@ -7,20 +7,25 @@ Percentiles are computed live against the position cohort for the same season
 the target played in. All deterministic (no LLM); see services.analytics.
 """
 
-from fastapi import APIRouter, Depends
-from sqlalchemy import select
-from sqlalchemy.ext.asyncio import AsyncSession
-
+from apps.api.app.core.config import settings
 from apps.api.app.core.errors import NotFoundError
 from apps.api.app.db.models.football import Player, PlayerSeasonStat
 from apps.api.app.db.session import get_session
 from apps.api.app.services.player_analytics import analyze_stat
+from fastapi import APIRouter, Depends, Query
+from sqlalchemy import select
+from sqlalchemy.ext.asyncio import AsyncSession
 
 router = APIRouter(prefix="/players", tags=["analytics"])
 
 
 @router.get("/{player_id}/analytics")
-async def player_analytics(player_id: int, session: AsyncSession = Depends(get_session)) -> dict:
+async def player_analytics(
+    player_id: int,
+    provider: str | None = Query(default=None, description="data provider (default: configured default)"),
+    session: AsyncSession = Depends(get_session),
+) -> dict:
+    provider = provider or settings.default_provider
     player = await session.get(Player, player_id)
     if player is None:
         raise NotFoundError("Player not found")
@@ -29,7 +34,10 @@ async def player_analytics(player_id: int, session: AsyncSession = Depends(get_s
     stats = (
         await session.scalars(
             select(PlayerSeasonStat)
-            .where(PlayerSeasonStat.player_id == player_id)
+            .where(
+                PlayerSeasonStat.player_id == player_id,
+                PlayerSeasonStat.provider == provider,
+            )
             .order_by(PlayerSeasonStat.minutes_played.desc())
         )
     ).all()
@@ -44,6 +52,7 @@ async def player_analytics(player_id: int, session: AsyncSession = Depends(get_s
             select(PlayerSeasonStat).where(
                 PlayerSeasonStat.position == target.position,
                 PlayerSeasonStat.season_id == target.season_id,
+                PlayerSeasonStat.provider == provider,
             )
         )
     ).all()

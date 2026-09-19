@@ -1,22 +1,19 @@
 """Scouting workspace models: missions, candidates, shortlists, comparisons,
 reports (spec §19–21)."""
 
+from apps.api.app.db.base import Base, TimestampMixin
 from sqlalchemy import (
+    JSON,
     BigInteger,
-    Boolean,
-    Date,
     Float,
     ForeignKey,
     Index,
     Integer,
-    JSON,
     String,
     Text,
     UniqueConstraint,
 )
 from sqlalchemy.orm import Mapped, mapped_column
-
-from apps.api.app.db.base import Base, TimestampMixin
 
 
 class ScoutingMission(Base, TimestampMixin):

@@ -12,13 +12,12 @@ from __future__ import annotations
 import time
 from datetime import date
 
-from sqlalchemy import select
-from sqlalchemy.ext.asyncio import AsyncSession
-
 from apps.api.app.core.config import settings
 from apps.api.app.db.models.agents import AgentEvent, AgentRun, AgentTask
 from apps.api.app.db.models.football import Player, PlayerSeasonStat
 from apps.api.app.db.models.scouting import MissionCandidate, ScoutingMission
+from sqlalchemy import select
+from sqlalchemy.ext.asyncio import AsyncSession
 
 REFERENCE_DATE = date(2025, 1, 1)
 

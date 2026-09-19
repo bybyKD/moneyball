@@ -4,8 +4,8 @@ Uses psycopg (v3) async. Test override support via ``override_engine``.
 """
 
 from collections.abc import AsyncIterator
-from contextlib import asynccontextmanager
 
+from apps.api.app.core.config import settings
 from sqlalchemy import NullPool
 from sqlalchemy.ext.asyncio import (
     AsyncEngine,
@@ -13,8 +13,6 @@ from sqlalchemy.ext.asyncio import (
     async_sessionmaker,
     create_async_engine,
 )
-
-from apps.api.app.core.config import settings
 
 
 def build_engine(url: str | None = None, *, force_dispose: bool = False) -> AsyncEngine:

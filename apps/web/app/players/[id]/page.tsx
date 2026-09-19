@@ -31,8 +31,13 @@ export default async function PlayerPage({ params }: { params: Promise<{ id: str
           <>
             <h1 className="mb-1 mt-3 text-3xl font-bold">{player.full_name}</h1>
             <div className="mb-6 text-sm text-[#8fa0bd]">
-              {player.primary_position} · {player.nationality_name} · born {player.date_of_birth}
+              {player.primary_position}
+              {player.nationality_name ? ` · ${player.nationality_name}` : ""}
+              {player.date_of_birth ? ` · born ${player.date_of_birth}` : ""}
             </div>
+            <p className="mb-6 text-xs text-[#475877]">
+              {player.provider === "statsbomb" ? "Source: StatsBomb open data" : "Source: demo data"}
+            </p>
             {analytics?.result ? (
               <div className="max-w-lg rounded-xl border border-[#1f2c44] bg-[#0e1626] p-5">
                 <div className="mb-4 flex items-baseline gap-6">

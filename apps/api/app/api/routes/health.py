@@ -1,11 +1,9 @@
 """Health-check routes (spec §26)."""
 
-from fastapi import APIRouter, Depends
-from sqlalchemy import text
-from sqlalchemy.ext.asyncio import AsyncSession
-
 from apps.api.app.api.deps import SessionDep
 from apps.api.app.core.config import settings
+from fastapi import APIRouter
+from sqlalchemy import text
 
 router = APIRouter(prefix="/health", tags=["system"])
 

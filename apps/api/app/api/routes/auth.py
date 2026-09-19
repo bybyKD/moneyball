@@ -1,14 +1,14 @@
 """Auth routes — register / login / me (spec §26/§36)."""
 
-from fastapi import APIRouter, Depends, Response
-from sqlalchemy import select
-
 from apps.api.app.core.config import settings
-from apps.api.app.core.errors import ConflictError, MoneyballError, UnauthorizedError, NotFoundError, UnauthorizedError
+from apps.api.app.core.errors import ConflictError, ForbiddenError, UnauthorizedError
 from apps.api.app.core.security import create_access_token, hash_password, verify_password
 from apps.api.app.db.models import User  # noqa: F401  (registry side effect — keeps Alembic happy)
 from apps.api.app.db.session import get_session
 from apps.api.app.schemas.auth import LoginIn, RegisterIn, TokenOut, UserOut
+from fastapi import APIRouter, Depends, Response
+from sqlalchemy import select
+
 # schemas.auth already provides RegisterIn/LoginIn/TokenOut; keep this line
 # intentionally absent so there is a single source of truth for auth schemas.
 

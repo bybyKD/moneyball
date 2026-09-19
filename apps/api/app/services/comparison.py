@@ -7,20 +7,24 @@ percentiles, composite score, market value.
 
 from __future__ import annotations
 
+from apps.api.app.core.config import settings
+from apps.api.app.db.models.football import Player, PlayerSeasonStat
+from apps.api.app.services.player_analytics import analyze_stat
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from apps.api.app.db.models.football import Player, PlayerSeasonStat
-from apps.api.app.services.player_analytics import analyze_stat
 
-
-async def _one(session: AsyncSession, player_id: int) -> dict:
+async def _one(session: AsyncSession, player_id: int, provider: str | None = None) -> dict:
+    provider = provider or settings.default_provider
     player = await session.get(Player, player_id)
     if player is None:
         return {"player_id": player_id, "error": "not_found"}
     stat = await session.scalar(
         select(PlayerSeasonStat)
-        .where(PlayerSeasonStat.player_id == player_id)
+        .where(
+            PlayerSeasonStat.player_id == player_id,
+            PlayerSeasonStat.provider == provider,
+        )
         .order_by(PlayerSeasonStat.minutes_played.desc())
     )
     if stat is None:
@@ -39,6 +43,7 @@ async def _one(session: AsyncSession, player_id: int) -> dict:
             select(PlayerSeasonStat).where(
                 PlayerSeasonStat.position == stat.position,
                 PlayerSeasonStat.season_id == stat.season_id,
+                PlayerSeasonStat.provider == provider,
             )
         )
     ).all()
@@ -55,8 +60,8 @@ async def _one(session: AsyncSession, player_id: int) -> dict:
     }
 
 
-async def compare_players(session: AsyncSession, player_ids: list[int]) -> dict:
-    sides = [await _one(session, pid) for pid in player_ids]
+async def compare_players(session: AsyncSession, player_ids: list[int], provider: str | None = None) -> dict:
+    sides = [await _one(session, pid, provider=provider) for pid in player_ids]
     valid = [s for s in sides if not s.get("error")]
     if not valid:
         return {"players": sides, "verdict": "no comparable players"}

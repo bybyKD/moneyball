@@ -39,16 +39,20 @@ make setup        # install API + web dependencies
 make migrate      # run Alembic migrations
 make api-dev      # http://localhost:8000
 make web-dev      # http://localhost:3000
-make seed         # load DEMO DATA (Phase 2) — 5,000 players
-make embed        # build pgvector lookalike vectors (Phase 5)
-make api-test     # pytest batter (12 tests, boots :8008)
+make seed         # load REAL StatsBomb open data (~17 GB, all comps)
+make embed        # build pgvector lookalike vectors for the default provider
+make api-test     # pytest batter (13 tests, boots :8008)
 make web-dev      # Next.js on :3000 → http://localhost:3000
 ```
+
+`make seed-demo` / `make embed-demo` target the legacy synthetic roster
+(provider `demo`) for offline QA. Real data is the default.
 
 ## Documentation
 
 - [Architecture](docs/architecture.md) — stack, request flow, deterministic analytics + embeddings + agent design
 - [Data model](docs/data-model.md) — all 26 tables across football, scouting, agents, market, auth
+- [Data sources & attribution](docs/attribution.md) — StatsBomb open data, licenses, aggregation notes, provider isolation
 - [Development](docs/development.md) — quick start, make targets, conventions, where things live
 
 ## Configuration
@@ -59,5 +63,6 @@ Copy `.env.example` to `.env` and adjust. Secrets are never committed.
 
 - Every number carries a `sample`, `season`, `source`, and `confidence`.
 - Analytics are deterministic (SQL/Python), never LLM-invented.
-- All seed data is explicitly labeled `DEMO DATA` until a licensed
-  provider is wired behind the provider interfaces.
+- The default dataset is **real StatsBomb open data** (CC BY-NC-SA 4.0 — see
+  [attribution](docs/attribution.md)); synthetic rows are tagged `demo` and are
+  provider-isolated so they can never pollute real-data results.

@@ -10,15 +10,14 @@ Startup sequence:
 from contextlib import asynccontextmanager
 from typing import AsyncIterator
 
-from fastapi import FastAPI
-from fastapi.middleware.cors import CORSMiddleware
-from sqlalchemy import text
-
+from apps.api.app.api.router import api_router
 from apps.api.app.core.config import settings
 from apps.api.app.core.errors import register_exception_handlers
 from apps.api.app.core.logging import configure_logging, emit
-from apps.api.app.api.router import api_router
 from apps.api.app.db.session import engine
+from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
+from sqlalchemy import text
 
 
 async def check_database_ready() -> None:

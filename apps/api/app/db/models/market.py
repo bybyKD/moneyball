@@ -1,21 +1,18 @@
 """Market & context models: transfers, market values, contracts, injuries,
 sources (spec §22, §35 — every data point carries source + season)."""
 
+from apps.api.app.db.base import Base, TimestampMixin
 from sqlalchemy import (
     BigInteger,
     Boolean,
     Date,
-    Float,
     ForeignKey,
-    Integer,
     Index,
+    Integer,
     String,
     Text,
-    UniqueConstraint,
 )
 from sqlalchemy.orm import Mapped, mapped_column
-
-from apps.api.app.db.base import Base, TimestampMixin
 
 
 class Source(Base, TimestampMixin):

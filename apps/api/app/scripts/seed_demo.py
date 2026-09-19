@@ -21,9 +21,6 @@ import random
 from datetime import date, timedelta
 from itertools import count
 
-from sqlalchemy import select, text
-
-from apps.api.app.db.session import get_session
 from apps.api.app.db.models.football import (
     Club,
     Competition,
@@ -32,6 +29,8 @@ from apps.api.app.db.models.football import (
     PlayerSeasonStat,
     Season,
 )
+from apps.api.app.db.session import get_session
+from sqlalchemy import select, text
 
 RNG = random.Random(42069)
 LEAGUES = [
@@ -130,10 +129,20 @@ async def run(n_players: int) -> None:
     rng = RNG
 
     async for session in get_session():
-        # --- reset demo rows (fk order) so re-seeds are deterministic ---
-        for table in ("player_season_stats", "player_match_stats", "player_positions",
-                      "player_roles", "players", "clubs", "competitions", "seasons", "leagues"):
-            await session.execute(text(f"DELETE FROM {table}"))
+        # --- reset ONLY demo rows (fk order) so re-seeds are deterministic
+        #     and never touch other providers (e.g. statsbomb) ---
+        for table in (
+            "player_season_stats", "player_match_stats", "player_positions",
+            "player_roles", "players", "clubs", "competitions", "seasons", "leagues",
+        ):
+            if table in ("player_season_stats",):
+                await session.execute(text("DELETE FROM player_season_stats WHERE provider = 'demo'"))
+            elif table in ("player_match_stats", "player_positions", "player_roles"):
+                await session.execute(
+                    text(f"DELETE FROM {table} WHERE player_id IN (SELECT id FROM players WHERE provider = 'demo')")
+                )
+            else:
+                await session.execute(text(f"DELETE FROM {table} WHERE provider = 'demo'"))
         await session.commit()
         leagues = {}
         comps = {}
@@ -279,7 +288,6 @@ async def run(n_players: int) -> None:
 
         await session.commit()
 
-        import collections
         print("Seeded demo dataset:")
         for nm, lg in leagues.items():
             nclub = sum(1 for c in clubs if c.league_id == lg.id)

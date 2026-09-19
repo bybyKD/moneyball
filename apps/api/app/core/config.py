@@ -48,6 +48,9 @@ class Settings(BaseSettings):
     # Embeddings (pgvector)
     embedding_dim: int = 512
 
+    # Data provider
+    default_provider: str = "statsbomb"  # statsbomb | demo — cohort reads default here
+
     # Demo seed scale
     seed_players: int = 5000
     seed_clubs: int = 220

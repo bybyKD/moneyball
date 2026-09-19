@@ -1,14 +1,14 @@
 """Players API — read endpoints per spec §6/§7. Percentiles & per-90 merge in
 Phase 3 (analytics engine); these routes expose raw repository rows."""
 
-from fastapi import APIRouter, Depends
-from sqlalchemy import select
-from sqlalchemy.ext.asyncio import AsyncSession
-
+from apps.api.app.core.config import settings
 from apps.api.app.core.errors import NotFoundError
 from apps.api.app.db.models.football import Player
 from apps.api.app.db.session import get_session
 from apps.api.app.schemas.player import PlayerOut
+from fastapi import APIRouter, Depends, Query
+from sqlalchemy import select
+from sqlalchemy.ext.asyncio import AsyncSession
 
 router = APIRouter(prefix="/players", tags=["players"])
 
@@ -16,6 +16,7 @@ router = APIRouter(prefix="/players", tags=["players"])
 @router.get("", response_model=list[PlayerOut])
 async def list_players(
     session: AsyncSession = Depends(get_session),
+    provider: str | None = Query(default=None, description="data provider (default: configured default)"),
     position: str | None = None,
     league_id: int | None = None,
     age_max: int | None = None,
@@ -23,7 +24,9 @@ async def list_players(
     limit: int = 50,
     offset: int = 0,
 ) -> list[Player]:
-    stmt = select(Player).order_by(Player.full_name).limit(min(limit, 200)).offset(max(offset, 0))
+    stmt = select(Player).where(
+        Player.provider == (provider or settings.default_provider)
+    ).order_by(Player.full_name).limit(min(limit, 200)).offset(max(offset, 0))
     if position:
         stmt = stmt.where(Player.primary_position == position)
     if q:

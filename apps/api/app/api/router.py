@@ -2,11 +2,21 @@
 
 from fastapi import APIRouter
 
-
 api_router = APIRouter()
 
 # Local imports keep router.py dependency-light at import time.
-from apps.api.app.api.routes import agents, analytics, auth, compare, health, market, players, scouting, similar, users  # noqa: E402
+from apps.api.app.api.routes import (  # noqa: E402
+    agents,
+    analytics,
+    auth,
+    compare,
+    health,
+    market,
+    players,
+    scouting,
+    similar,
+    users,
+)
 
 api_router.include_router(health.router)
 api_router.include_router(auth.router)

@@ -1,9 +1,8 @@
 """Auth models: users."""
 
+from apps.api.app.db.base import Base, TimestampMixin
 from sqlalchemy import BigInteger, Boolean, String
 from sqlalchemy.orm import Mapped, mapped_column
-
-from apps.api.app.db.base import Base, TimestampMixin
 
 
 class User(Base, TimestampMixin):

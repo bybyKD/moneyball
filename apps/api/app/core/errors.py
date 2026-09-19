@@ -1,10 +1,9 @@
 """Centralized error types and FastAPI exception handlers."""
 
+from apps.api.app.core.logging import emit
 from fastapi import FastAPI, Request, status
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
-
-from apps.api.app.core.logging import emit
 
 
 class MoneyballError(Exception):

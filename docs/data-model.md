@@ -22,7 +22,7 @@ dev and test DBs. Foreign-key styles: `snake_case` column names, BigInteger PKs.
 
 | Table | Purpose |
 |-------|---------|
-| `player_embeddings` | `player_id`, `kind` (`tactical_profile`), `text`, `embedding VECTOR(512)` (HNSW L2 index `ix_pe_vector`), `model` (`moneyball_demo_v1`) |
+| `player_embeddings` | `player_id`, `kind` (`tactical_profile`), `text`, `embedding VECTOR(512)` (HNSW L2 index `ix_pe_vector`), `model` (`moneyball_v1`), `provider` |
 
 ## Scouting workspace (spec §19–21)
 

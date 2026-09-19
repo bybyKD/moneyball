@@ -15,7 +15,7 @@ export default function SettingsPage() {
           {[
             ["Web → API", env],
             ["Demo data", "5,000 players · 220 clubs · 18 leagues · 5 seasons (`make seed`)"],
-            ["Embeddings", "pgvector 512-dim HNSW — moneyball_demo_v1 (`make embed`)"],
+            ["Embeddings", "pgvector 512-dim HNSW — moneyball_v1 (`make embed`)"],
             ["Analytics", "deterministic per-90 + position-cohort percentiles (no LLM)"],
             ["Agent mode", "reference pipeline · 0 LLM calls · provider-agnostic (§38)"],
             ["Auth", "cookie session · PBKDF2 password · demo scope only"],

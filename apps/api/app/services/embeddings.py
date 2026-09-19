@@ -7,7 +7,7 @@ Turns structured player stats into a fixed 512-dim semantic vector:
     0-padding to 512 ]
 
 All vectors are unit-normalized, so L2 distance (the HNSW index metric) orders
-players identically to cosine similarity. model = "moneyball_demo_v1" and
+players identically to cosine similarity. model = "moneyball_v1" and
 source values are stamped so nothing pretends to be an LLM embedding (spec §38).
 """
 
@@ -16,15 +16,13 @@ from __future__ import annotations
 from bisect import bisect_right
 from math import sqrt
 
-from pgvector.sqlalchemy import Vector
-from sqlalchemy import delete, select
-from sqlalchemy.ext.asyncio import AsyncSession
-
 from apps.api.app.core.config import settings
 from apps.api.app.db.models.embeddings import PlayerEmbedding
 from apps.api.app.db.models.football import Player, PlayerSeasonStat
+from sqlalchemy import delete, select
+from sqlalchemy.ext.asyncio import AsyncSession
 
-MODEL_NAME = "moneyball_demo_v1"
+MODEL_NAME = "moneyball_v1"
 
 RATIO_FEATURES = {
     "pass_completion": ("passes_completed", "passes_attempted"),
@@ -85,11 +83,19 @@ def _feature_text(row, position: str) -> str:
     return f"position={position} " + " ".join(brief)
 
 
-async def build_all_embeddings(session: AsyncSession, batch_size: int = 500) -> dict:
-    """Recompute demo embeddings for every player (one row per player)."""
+async def build_all_embeddings(session: AsyncSession, provider: str | None = None, batch_size: int = 500) -> dict:
+    """Recompute embeddings for every player of a data provider (one row/player).
+
+    Cohorts are scoped to the provider so statsbomb and demo vectors never mix;
+    rows are stamped with the provider and model so re-seeding a different
+    dataset leaves previous providers untouched.
+    """
+    provider = provider or settings.default_provider
     rows = (
         await session.scalars(
-            select(PlayerSeasonStat).order_by(PlayerSeasonStat.player_id, PlayerSeasonStat.minutes_played.desc())
+            select(PlayerSeasonStat)
+            .where(PlayerSeasonStat.provider == provider)
+            .order_by(PlayerSeasonStat.player_id, PlayerSeasonStat.minutes_played.desc())
         )
     ).all()
     by_player: dict[int, PlayerSeasonStat] = {}
@@ -123,7 +129,12 @@ async def build_all_embeddings(session: AsyncSession, batch_size: int = 500) -> 
         ).all()
     }
 
-    await session.execute(delete(PlayerEmbedding).where(PlayerEmbedding.model == MODEL_NAME))
+    await session.execute(
+        delete(PlayerEmbedding).where(
+            PlayerEmbedding.model == MODEL_NAME,
+            PlayerEmbedding.provider == provider,
+        )
+    )
 
     count = 0
     embeds = []
@@ -147,6 +158,7 @@ async def build_all_embeddings(session: AsyncSession, batch_size: int = 500) -> 
                 text=name,  # short text description
                 embedding=_vector(feats),
                 model=MODEL_NAME,
+                provider=provider,
             )
         )
         count += 1
@@ -157,4 +169,4 @@ async def build_all_embeddings(session: AsyncSession, batch_size: int = 500) -> 
     if embeds:
         session.add_all(embeds)
         await session.commit()
-    return {"embedded": count, "model": MODEL_NAME, "dims": settings.embedding_dim}
+    return {"embedded": count, "model": MODEL_NAME, "provider": provider, "dims": settings.embedding_dim}

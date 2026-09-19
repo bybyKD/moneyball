@@ -2,7 +2,7 @@ SHELL := /bin/zsh
 .DEFAULT_GOAL := help
 
 .PHONY: help infra-up infra-down infra-logs setup web-setup api-setup migrate \
-        migrate-downgrade seed api-dev web-dev api-test web-test test lint \
+        migrate-downgrade seed seed-demo embed embed-demo api-dev web-dev api-test web-test test lint \
         typecheck push clean
 
 help: ## Show help
@@ -33,11 +33,17 @@ migrate: ## Run Alembic migrations against the API database
 migrate-downgrade: ## Downgrade DB one revision
 	./.venv/bin/alembic -c apps/api/alembic.ini downgrade -1
 
-seed: ## Load DEMO DATA seed (python) — Phase 2
+seed: ## Load REAL StatsBomb open data (one-time ~17 GB clone; all comps)
+	./.venv/bin/python -m apps.api.app.services.statsbomb
+
+seed-demo: ## Load legacy DEMO data (provider=demo) — QA/offline only
 	./.venv/bin/python -m apps.api.app.scripts.seed_demo
 
-embed: ## Embed demo roster into pgvector (deterministic) — Phase 5
+embed: ## Embed the default provider's roster into pgvector (deterministic)
 	./.venv/bin/python -m apps.api.app.scripts.embed_demo
+
+embed-demo: ## Embed the demo roster into pgvector (deterministic)
+	./.venv/bin/python -m apps.api.app.scripts.embed_demo --provider demo
 
 api-dev: ## Run FastAPI dev server (http://localhost:8000)
 	./.venv/bin/uvicorn apps.api.app.main:app --reload --host 0.0.0.0 --port 8000

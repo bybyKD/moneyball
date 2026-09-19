@@ -4,13 +4,11 @@ Used for semantic retrieval over player descriptions, tactical profiles,
 reports, and research documents. Structured statistics remain in SQL.
 """
 
-from pgvector.sqlalchemy import Vector
-
-from sqlalchemy import BigInteger, ForeignKey, Index, String, Text
-from sqlalchemy.orm import Mapped, mapped_column
-
 from apps.api.app.core.config import settings
 from apps.api.app.db.base import Base, TimestampMixin
+from pgvector.sqlalchemy import Vector
+from sqlalchemy import BigInteger, ForeignKey, Index, String, Text
+from sqlalchemy.orm import Mapped, mapped_column
 
 _description_index = Index(
     "ix_pe_vector",
@@ -31,3 +29,4 @@ class PlayerEmbedding(Base, TimestampMixin):
     text: Mapped[str | None] = mapped_column(Text, nullable=True)
     embedding: Mapped[Vector] = mapped_column(Vector(settings.embedding_dim), nullable=True)
     model: Mapped[str] = mapped_column(String(80), nullable=False, default="none")
+    provider: Mapped[str] = mapped_column(String(40), nullable=False, default="demo", index=True)

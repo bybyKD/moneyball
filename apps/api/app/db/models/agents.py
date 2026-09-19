@@ -5,19 +5,18 @@ agent_tasks  → one agent's step within a run
 agent_events → granular events the UI streams (progress, tool calls, results)
 """
 
+from apps.api.app.db.base import Base, TimestampMixin
 from sqlalchemy import (
+    JSON,
     BigInteger,
     Float,
     ForeignKey,
     Index,
     Integer,
-    JSON,
     String,
     Text,
 )
 from sqlalchemy.orm import Mapped, mapped_column
-
-from apps.api.app.db.base import Base, TimestampMixin
 
 
 class AgentRun(Base, TimestampMixin):

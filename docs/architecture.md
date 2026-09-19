@@ -41,7 +41,7 @@ Service layer (apps/api/app/services/*) — all decisions here
    ├─ agents.py           reference pipeline: plan→collect→analyze→review→write
    ├─ market.py           value picks + position summary
    ├─ comparison.py       head-to-head alignments
-   └─ embeddings.py       512-dim pgvector build (moneyball_demo_v1)
+   └─ embeddings.py       512-dim pgvector build (moneyball_v1)
    ▼
 SQLAlchemy models (apps/api/app/db/models/*) → Postgres
 ```
@@ -73,7 +73,7 @@ rebuilds).
 `services/embeddings.py` builds one 512-dim vector per player:
 `[position-cohort percentiles (17) · ratios+physical+minutes (~6) · position
 one-hot (8) | 0-padding to 512]`, unit-normalized so L2 distance on the HNSW
-index ordering ≡ cosine similarity. Stamped `model = moneyball_demo_v1`, kept
+index ordering ≡ cosine similarity. Stamped `model = moneyball_v1`, kept
 visibly distinct from any future LLM embedding.
 
 ## Agents (§10–§17, §38)

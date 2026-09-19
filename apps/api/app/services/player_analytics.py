@@ -8,8 +8,8 @@ from __future__ import annotations
 from datetime import date
 
 from apps.api.app.services.analytics import (
-    MetricValue,
     POSITION_WEIGHTS,
+    MetricValue,
     composite_score,
     estimate_market_value,
     per90,

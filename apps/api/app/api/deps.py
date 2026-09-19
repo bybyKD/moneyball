@@ -2,15 +2,14 @@
 
 from typing import Annotated
 
-from fastapi import Depends, Request
-from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
-from sqlalchemy.ext.asyncio import AsyncSession
-
 from apps.api.app.core.config import settings
 from apps.api.app.core.errors import UnauthorizedError
 from apps.api.app.core.security import decode_access_token
 from apps.api.app.db.models.auth import User
 from apps.api.app.db.session import get_session
+from fastapi import Depends, Request
+from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
+from sqlalchemy.ext.asyncio import AsyncSession
 
 SessionDep = Annotated[AsyncSession, Depends(get_session)]
 

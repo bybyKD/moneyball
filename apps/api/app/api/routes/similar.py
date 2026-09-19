@@ -2,20 +2,19 @@
 
 GET /api/players/{player_id}/similar?k=6
     pgvector L2 nearest-neighbors over the deterministic tactical_profile
-    embedding (moneyball_demo_v1). Shares the HNSW index; distances map to
+    embedding (moneyball_v1). Shares the HNSW index; distances map to
     cosine similarity because vectors are unit-normalized.
 """
 
-import math
 
-from fastapi import APIRouter, Depends
-from sqlalchemy import select
-from sqlalchemy.ext.asyncio import AsyncSession
-
+from apps.api.app.core.config import settings
 from apps.api.app.core.errors import NotFoundError
 from apps.api.app.db.models.embeddings import PlayerEmbedding
-from apps.api.app.db.models.football import Player, PlayerSeasonStat
+from apps.api.app.db.models.football import Player
 from apps.api.app.db.session import get_session
+from fastapi import APIRouter, Depends, Query
+from sqlalchemy import select
+from sqlalchemy.ext.asyncio import AsyncSession
 
 router = APIRouter(prefix="/players", tags=["semantic"])
 
@@ -24,11 +23,16 @@ router = APIRouter(prefix="/players", tags=["semantic"])
 async def similar_players(
     player_id: int,
     k: int = 6,
+    provider: str | None = Query(default=None, description="data provider (default: configured default)"),
     session: AsyncSession = Depends(get_session),
 ) -> dict:
+    provider = provider or settings.default_provider
     k = max(1, min(k, 20))
     target_emb = await session.scalar(
-        select(PlayerEmbedding).where(PlayerEmbedding.player_id == player_id)
+        select(PlayerEmbedding).where(
+            PlayerEmbedding.player_id == player_id,
+            PlayerEmbedding.provider == provider,
+        )
     )
     if target_emb is None or target_emb.embedding is None:
         raise NotFoundError("No embedding for this player; run `make embed` first")
@@ -36,7 +40,11 @@ async def similar_players(
     rows = (
         await session.execute(
             select(PlayerEmbedding, PlayerEmbedding.embedding.l2_distance(target_emb.embedding).label("dist"))
-            .where(PlayerEmbedding.player_id != player_id, PlayerEmbedding.embedding.isnot(None))
+            .where(
+                PlayerEmbedding.player_id != player_id,
+                PlayerEmbedding.provider == provider,
+                PlayerEmbedding.embedding.isnot(None),
+            )
             .order_by("dist")
             .limit(k)
         )

@@ -5,17 +5,16 @@ GET  /api/agents/runs        list my runs
 GET  /api/agents/runs/{id}   run + task trace + events
 """
 
-from fastapi import APIRouter, Depends
-from pydantic import BaseModel
-from sqlalchemy import select
-from sqlalchemy.ext.asyncio import AsyncSession
-
 from apps.api.app.api.deps import CurrentUser
 from apps.api.app.core.errors import NotFoundError
 from apps.api.app.db.models.agents import AgentEvent, AgentRun, AgentTask
 from apps.api.app.db.models.scouting import ScoutingMission
 from apps.api.app.db.session import get_session
 from apps.api.app.services.agents import run_agent_pipeline
+from fastapi import APIRouter, Depends
+from pydantic import BaseModel
+from sqlalchemy import select
+from sqlalchemy.ext.asyncio import AsyncSession
 
 router = APIRouter(prefix="/agents/runs")
 

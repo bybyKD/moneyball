@@ -9,11 +9,7 @@ GET  /api/shortlists/{id}               shortlist + players
 POST /api/shortlists/{id}/players/{pid} add a candidate to a shortlist
 """
 
-from fastapi import APIRouter, Depends
-from pydantic import BaseModel
-from sqlalchemy import select
-from sqlalchemy.ext.asyncio import AsyncSession
-
+from apps.api.app.api.deps import CurrentUser
 from apps.api.app.core.errors import NotFoundError
 from apps.api.app.db.models.scouting import (
     MissionCandidate,
@@ -22,8 +18,11 @@ from apps.api.app.db.models.scouting import (
     ShortlistPlayer,
 )
 from apps.api.app.db.session import get_session
-from apps.api.app.api.deps import CurrentUser
 from apps.api.app.services.scouting import run_mission
+from fastapi import APIRouter, Depends
+from pydantic import BaseModel
+from sqlalchemy import select
+from sqlalchemy.ext.asyncio import AsyncSession
 
 router = APIRouter(prefix="/missions")
 

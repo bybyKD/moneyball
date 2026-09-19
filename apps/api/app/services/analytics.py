@@ -14,7 +14,7 @@ The rule weights below are static domain heuristics hard-coded per position
 from __future__ import annotations
 
 from dataclasses import dataclass
-from math import isnan, isinf
+from math import isinf, isnan
 
 POSITION_PAY = {
     "GK": 1.0, "CB": 1.0, "FB": 0.9, "DM": 1.0, "CM": 1.1,
@@ -110,12 +110,12 @@ def per90(raw: float | None, minutes: float | None) -> float | None:
     return round(raw * 90.0 / minutes, 3)
 
 
-def percentile(value: float | None, cohort_values: list[float]) -> float | None:
+def percentile(value: float | None, cohort_values: list) -> float | None:
     """Share of the position cohort <= value (0..1). Lower=worse for most
     metrics. None if the metric is unavailable."""
     if not _safe(value):
         return None
-    below = sum(1 for v in cohort_values if v <= value)  # type: ignore[arg-type]
+    below = sum(1 for v in cohort_values if v is not None and _safe(v) and v <= value)  # type: ignore[arg-type]
     total = max(1, len(cohort_values))
     return round(below / total, 4)
 

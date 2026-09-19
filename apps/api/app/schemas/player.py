@@ -12,10 +12,11 @@ class PlayerOut(BaseModel):
     id: int
     slug: str
     full_name: str
-    date_of_birth: date
-    nationality_code: str
-    nationality_name: str
+    date_of_birth: date | None = None
+    nationality_code: str | None = None
+    nationality_name: str | None = None
     height_cm: int | None
     preferred_foot: str | None
     primary_position: str
     current_club_id: int | None
+    provider: str = "demo"

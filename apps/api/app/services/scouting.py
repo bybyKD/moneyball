@@ -11,13 +11,12 @@ from __future__ import annotations
 
 from bisect import bisect_right
 
-from sqlalchemy import select
-from sqlalchemy.ext.asyncio import AsyncSession
-
 from apps.api.app.core.config import settings
 from apps.api.app.db.models.football import Player, PlayerSeasonStat
 from apps.api.app.db.models.scouting import MissionCandidate
 from apps.api.app.services.analytics import POSITION_WEIGHTS, per90
+from sqlalchemy import select
+from sqlalchemy.ext.asyncio import AsyncSession
 
 
 def _pps(row, col: str) -> float | None:
@@ -67,12 +66,16 @@ def _feature_value(row, weight_key: str) -> float | None:
     return won / total if total else None
 
 
-async def score_players_for_position(session: AsyncSession, position: str):
+async def score_players_for_position(
+    session: AsyncSession, position: str, provider: str | None = None
+):
     """Score all players in a position; return [{player, stat, score, metrics}].
 
-    Cohort = one row per player (most-minutes current-ish season row).
+    Cohort = one row per player (most-minutes current-ish season row) and is
+    scoped to a single data provider so statsbomb and demo rows never mix.
     Lower-is-better weights are normalized by (1 - percentile).
     """
+    provider = provider or settings.default_provider
     weights = POSITION_WEIGHTS.get(position)
     if not weights:
         return []
@@ -80,7 +83,10 @@ async def score_players_for_position(session: AsyncSession, position: str):
     rows = (
         await session.scalars(
             select(PlayerSeasonStat)
-            .where(PlayerSeasonStat.position == position)
+            .where(
+                PlayerSeasonStat.position == position,
+                PlayerSeasonStat.provider == provider,
+            )
             .order_by(PlayerSeasonStat.player_id, PlayerSeasonStat.minutes_played.desc())
         )
     ).all()
@@ -142,9 +148,9 @@ async def score_players_for_position(session: AsyncSession, position: str):
     return scored
 
 
-async def run_mission(session: AsyncSession, mission, position: str, top_n: int = 50):
+async def run_mission(session: AsyncSession, mission, position: str, top_n: int = 50, provider: str | None = None):
     """Rank candidates for a finished mission and store MissionCandidate rows."""
-    scored = await score_players_for_position(session, position)
+    scored = await score_players_for_position(session, position, provider=provider)
     existing = {
         c.player_id: c
         for c in (

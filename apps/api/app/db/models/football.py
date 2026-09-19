@@ -1,7 +1,9 @@
 """Football domain models: leagues, competitions, seasons, clubs, players,
 player positions/roles, and per-season/per-match statistics."""
 
+from apps.api.app.db.base import Base, TimestampMixin
 from sqlalchemy import (
+    JSON,
     BigInteger,
     Boolean,
     Date,
@@ -9,14 +11,10 @@ from sqlalchemy import (
     ForeignKey,
     Index,
     Integer,
-    JSON,
     String,
-    Text,
     UniqueConstraint,
 )
 from sqlalchemy.orm import Mapped, mapped_column, relationship
-
-from apps.api.app.db.base import Base, BigIntIdMixin, TimestampMixin
 
 
 class League(Base, TimestampMixin):
@@ -40,6 +38,8 @@ class Competition(Base, TimestampMixin):
     name: Mapped[str] = mapped_column(String(160), nullable=False)
     kind: Mapped[str] = mapped_column(String(40), nullable=False, default="league")  # league|cup|international
     gender: Mapped[str] = mapped_column(String(12), nullable=False, default="male")
+    provider: Mapped[str] = mapped_column(String(40), nullable=False, default="demo", index=True)
+    provider_id: Mapped[str | None] = mapped_column(String(120), nullable=True, index=True)
 
 
 class Season(Base, TimestampMixin):
@@ -50,6 +50,8 @@ class Season(Base, TimestampMixin):
     start_year: Mapped[int] = mapped_column(Integer, nullable=False)
     end_year: Mapped[int] = mapped_column(Integer, nullable=False)
     is_current: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
+    provider: Mapped[str] = mapped_column(String(40), nullable=False, default="demo", index=True)
+    provider_id: Mapped[str | None] = mapped_column(String(120), nullable=True, index=True)
 
 
 class Club(Base, TimestampMixin):
@@ -63,6 +65,8 @@ class Club(Base, TimestampMixin):
     league_id: Mapped[int | None] = mapped_column(ForeignKey("leagues.id"), nullable=True, index=True)
     logo_url: Mapped[str | None] = mapped_column(String(500), nullable=True)
     founded_year: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    provider: Mapped[str] = mapped_column(String(40), nullable=False, default="demo", index=True)
+    provider_id: Mapped[str | None] = mapped_column(String(120), nullable=True, index=True)
 
 
 class Player(Base, TimestampMixin):
@@ -73,14 +77,16 @@ class Player(Base, TimestampMixin):
     full_name: Mapped[str] = mapped_column(String(160), nullable=False, index=True)
     first_name: Mapped[str] = mapped_column(String(80), nullable=False)
     last_name: Mapped[str] = mapped_column(String(80), nullable=False)
-    date_of_birth: Mapped[Date] = mapped_column(Date, nullable=False, index=True)
-    nationality_code: Mapped[str] = mapped_column(String(3), nullable=False, index=True)
-    nationality_name: Mapped[str] = mapped_column(String(120), nullable=False)
+    date_of_birth: Mapped[Date | None] = mapped_column(Date, nullable=True, index=True)
+    nationality_code: Mapped[str | None] = mapped_column(String(3), nullable=True, index=True)
+    nationality_name: Mapped[str | None] = mapped_column(String(120), nullable=True)
     height_cm: Mapped[int | None] = mapped_column(Integer, nullable=True)
     preferred_foot: Mapped[str] = mapped_column(String(10), nullable=True)  # left|right|both
     primary_position: Mapped[str] = mapped_column(String(8), nullable=False, index=True)  # GK|CB|FB|DM|CM|AM|W|ST
     image_url: Mapped[str | None] = mapped_column(String(500), nullable=True)
     current_club_id: Mapped[int | None] = mapped_column(ForeignKey("clubs.id"), nullable=True, index=True)
+    provider: Mapped[str] = mapped_column(String(40), nullable=False, default="demo", index=True)
+    provider_id: Mapped[str | None] = mapped_column(String(120), nullable=True, index=True)
     profile: Mapped[dict | None] = mapped_column(JSON, nullable=True)
 
 
@@ -177,6 +183,8 @@ class PlayerSeasonStat(Base, TimestampMixin):
     # cards
     yellow_cards: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
     red_cards: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
+
+    provider: Mapped[str] = mapped_column(String(40), nullable=False, default="demo", index=True)
 
     player = relationship("Player")
     season = relationship("Season")

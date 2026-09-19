@@ -11,10 +11,9 @@ from __future__ import annotations
 
 import math
 
-from sqlalchemy.ext.asyncio import AsyncSession
-
 from apps.api.app.services.analytics import POSITION_WEIGHTS, estimate_market_value
 from apps.api.app.services.scouting import score_players_for_position
+from sqlalchemy.ext.asyncio import AsyncSession
 
 POSITIONS = list(POSITION_WEIGHTS.keys())
 
@@ -26,11 +25,17 @@ def _age(player) -> int | None:
     return (2025 - dob.year) - ((1, 1) < (dob.month, dob.day))
 
 
-async def value_ranking(session: AsyncSession, position: str | None = None, min_minutes: int = 600, k: int = 10) -> list[dict]:
+async def value_ranking(
+    session: AsyncSession,
+    position: str | None = None,
+    min_minutes: int = 600,
+    k: int = 10,
+    provider: str | None = None,
+) -> list[dict]:
     positions = [position] if position else list(POSITIONS)
     rows = []
     for pos in positions:
-        scored = await score_players_for_position(session, pos)
+        scored = await score_players_for_position(session, pos, provider=provider)
         for s in scored:
             player = s["player"]
             if player is None:
@@ -59,13 +64,13 @@ async def value_ranking(session: AsyncSession, position: str | None = None, min_
     rows.sort(key=lambda r: r["value_ratio"], reverse=True)
     return rows[:k]
 
-async def position_summary(session: AsyncSession, min_minutes: int = 600) -> dict:
+async def position_summary(session: AsyncSession, min_minutes: int = 600, provider: str | None = None) -> dict:
     """Per-position Moneyball distribution for the overview dashboard."""
     from statistics import median
 
     out = {}
     for pos in POSITIONS:
-        scored = await score_players_for_position(session, pos)
+        scored = await score_players_for_position(session, pos, provider=provider)
         eligible = [s for s in scored if (s["stat"].minutes_played or 0) >= min_minutes and s["player"] is not None]
         if not eligible:
             continue
