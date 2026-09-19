@@ -87,3 +87,26 @@ def test_player_analytics(server):
     assert body["score"] is not None
     assert body["market_value_eur"] is not None
     assert isinstance(body["percentiles"], dict)
+
+
+def test_scouting_mission_shortlist_flow(server):
+    s = httpx.post(f"{BASE}/auth/register", json={"email": "scout.t@test.io", "password": "demo12345", "display_name": "T Scout"}, timeout=5)
+    assert s.status_code == 201, s.text
+    cookie = s.headers.get("set-cookie", "").split(";")[0]
+    h = {"Cookie": cookie}
+    m = httpx.post(f"{BASE}/missions", json={"title": "ST targets", "position": "ST", "top_n": 5}, headers=h, timeout=30)
+    assert m.status_code == 201, m.text
+    mid = m.json()["id"]
+    g = httpx.get(f"{BASE}/missions/{mid}", headers=h, timeout=10)
+    assert g.status_code == 200
+    cands = g.json()["candidates"]
+    assert cands, "mission should produce candidates"
+    first = cands[0]
+    assert first["score"] > 0 and first["rank"] == 1
+    sl = httpx.post(f"{BASE}/shortlists", json={"name": "targets"}, headers=h, timeout=10)
+    assert sl.status_code == 201
+    sid = sl.json()["id"]
+    add = httpx.post(f"{BASE}/shortlists/{sid}/players/{first['player_id']}", headers=h, timeout=10)
+    assert add.status_code == 201
+    view = httpx.get(f"{BASE}/shortlists/{sid}", headers=h, timeout=10)
+    assert len(view.json()["players"]) == 1
