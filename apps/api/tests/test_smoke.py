@@ -141,3 +141,13 @@ def test_similar_players_embedding(server):
     assert body["model"] == "moneyball_demo_v1"
     assert len(body["neighbors"]) == 4
     assert all(0 <= n["similarity"] <= 1.0 for n in body["neighbors"])
+
+
+def test_market_value_picks(server):
+    r = httpx.get(f"{BASE}/market/value-picks?position=W&min_minutes=600&k=5", timeout=30)
+    assert r.status_code == 200, r.text
+    body = r.json()
+    assert len(body["picks"]) == 5
+    assert all(p["score"] > 0 and p["market_value_eur"] > 0 for p in body["picks"])
+    ratios = [p["value_ratio"] for p in body["picks"]]
+    assert ratios == sorted(ratios, reverse=True)
