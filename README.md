@@ -39,9 +39,17 @@ make setup        # install API + web dependencies
 make migrate      # run Alembic migrations
 make api-dev      # http://localhost:8000
 make web-dev      # http://localhost:3000
-make seed         # load DEMO DATA (Phase 2)
-make test         # run API tests
+make seed         # load DEMO DATA (Phase 2) — 5,000 players
+make embed        # build pgvector lookalike vectors (Phase 5)
+make api-test     # pytest batter (12 tests, boots :8008)
+make web-dev      # Next.js on :3000 → http://localhost:3000
 ```
+
+## Documentation
+
+- [Architecture](docs/architecture.md) — stack, request flow, deterministic analytics + embeddings + agent design
+- [Data model](docs/data-model.md) — all 26 tables across football, scouting, agents, market, auth
+- [Development](docs/development.md) — quick start, make targets, conventions, where things live
 
 ## Configuration
 
