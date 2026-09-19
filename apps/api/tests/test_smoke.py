@@ -90,7 +90,9 @@ def test_player_analytics(server):
 
 
 def test_scouting_mission_shortlist_flow(server):
-    s = httpx.post(f"{BASE}/auth/register", json={"email": "scout.t@test.io", "password": "demo12345", "display_name": "T Scout"}, timeout=5)
+    import uuid
+    email = f"scout.t.{uuid.uuid4().hex[:8]}@test.io"
+    s = httpx.post(f"{BASE}/auth/register", json={"email": email, "password": "demo12345", "display_name": "T Scout"}, timeout=5)
     assert s.status_code == 201, s.text
     cookie = s.headers.get("set-cookie", "").split(";")[0]
     h = {"Cookie": cookie}
@@ -110,3 +112,21 @@ def test_scouting_mission_shortlist_flow(server):
     assert add.status_code == 201
     view = httpx.get(f"{BASE}/shortlists/{sid}", headers=h, timeout=10)
     assert len(view.json()["players"]) == 1
+
+
+def test_agent_run_pipeline(server):
+    import uuid
+    email = f"agent.t.{uuid.uuid4().hex[:8]}@test.io"
+    s = httpx.post(f"{BASE}/auth/register", json={"email": email, "password": "demo12345", "display_name": "A Scout"}, timeout=5)
+    assert s.status_code == 201
+    h = {"Cookie": s.headers.get("set-cookie", "").split(";")[0]}
+    m = httpx.post(f"{BASE}/missions", json={"title": "LB targets", "position": "FB", "top_n": 3}, headers=h, timeout=30)
+    mid = m.json()["id"]
+    r = httpx.post(f"{BASE}/agents/runs", json={"mission_id": mid}, headers=h, timeout=30)
+    assert r.status_code == 201, r.text
+    body = r.json()
+    assert body["status"] == "complete"
+    assert body["llm_calls"] == 0 and body["cost_usd"] == 0
+    assert body["report"]["candidates"] and body["report"]["candidates"][0]["moneyball_score"] > 0
+    g = httpx.get(f"{BASE}/agents/runs/{body['id']}", headers=h, timeout=10)
+    assert g.json()["tasks"] and len(g.json()["events"]) >= 4
