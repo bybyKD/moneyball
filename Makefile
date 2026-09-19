@@ -36,6 +36,9 @@ migrate-downgrade: ## Downgrade DB one revision
 seed: ## Load DEMO DATA seed (python) — Phase 2
 	./.venv/bin/python -m apps.api.app.scripts.seed_demo
 
+embed: ## Embed demo roster into pgvector (deterministic) — Phase 5
+	./.venv/bin/python -m apps.api.app.scripts.embed_demo
+
 api-dev: ## Run FastAPI dev server (http://localhost:8000)
 	./.venv/bin/uvicorn apps.api.app.main:app --reload --host 0.0.0.0 --port 8000
 

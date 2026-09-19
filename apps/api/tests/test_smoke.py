@@ -130,3 +130,14 @@ def test_agent_run_pipeline(server):
     assert body["report"]["candidates"] and body["report"]["candidates"][0]["moneyball_score"] > 0
     g = httpx.get(f"{BASE}/agents/runs/{body['id']}", headers=h, timeout=10)
     assert g.json()["tasks"] and len(g.json()["events"]) >= 4
+
+
+def test_similar_players_embedding(server):
+    p = httpx.get(f"{BASE}/players?limit=1", timeout=5)
+    pid = p.json()[0]["id"]
+    r = httpx.get(f"{BASE}/players/{pid}/similar?k=4", timeout=10)
+    assert r.status_code == 200, r.text
+    body = r.json()
+    assert body["model"] == "moneyball_demo_v1"
+    assert len(body["neighbors"]) == 4
+    assert all(0 <= n["similarity"] <= 1.0 for n in body["neighbors"])

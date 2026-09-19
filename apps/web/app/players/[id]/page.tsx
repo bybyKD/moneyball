@@ -5,16 +5,21 @@ export const dynamic = "force-dynamic";
 
 async function fetchData(id: string) {
   const base = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
-  const [p, a] = await Promise.all([
+  const [p, a, sim] = await Promise.all([
     fetch(`${base}/api/players/${id}`, { cache: "no-store" }),
     fetch(`${base}/api/players/${id}/analytics`, { cache: "no-store" }),
+    fetch(`${base}/api/players/${id}/similar?k=5`, { cache: "no-store" }),
   ]);
-  return { player: p.ok ? await p.json() : null, analytics: a.ok ? await a.json() : null };
+  return {
+    player: p.ok ? await p.json() : null,
+    analytics: a.ok ? await a.json() : null,
+    similar: sim.ok ? await sim.json() : null,
+  };
 }
 
 export default async function PlayerPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
-  const { player, analytics } = await fetchData(id);
+  const { player, analytics, similar } = await fetchData(id);
   return (
     <div className="flex">
       <SideNav active="/players" />
@@ -53,6 +58,23 @@ export default async function PlayerPage({ params }: { params: Promise<{ id: str
               </div>
             ) : (
               <p className="text-[#8fa0bd]">No analytics available.</p>
+            )}
+
+            {similar?.neighbors && (
+              <div className="mt-6 max-w-lg rounded-xl border border-[#1f2c44] bg-[#0e1626] p-5">
+                <div className="mb-3 text-xs text-[#8fa0bd]">Semantic lookalikes (pgvector · {similar.model})</div>
+                <ul className="space-y-1.5 text-sm">
+                  {similar.neighbors.map((n: any) => (
+                    <li key={n.player_id}>
+                      <Link href={`/players/${n.player_id}`} className="flex items-center gap-3 hover:text-[#8cbfff]">
+                        <span className="w-10 text-[#8cbfff]">{Math.round(n.similarity * 100)}%</span>
+                        <span className="font-medium">{n.name}</span>
+                        <span className="text-xs text-[#8fa0bd]">{n.position}</span>
+                      </Link>
+                    </li>
+                  ))}
+                </ul>
+              </div>
             )}
           </>
         )}
