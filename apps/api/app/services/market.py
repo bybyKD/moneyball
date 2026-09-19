@@ -58,3 +58,27 @@ async def value_ranking(session: AsyncSession, position: str | None = None, min_
             )
     rows.sort(key=lambda r: r["value_ratio"], reverse=True)
     return rows[:k]
+
+async def position_summary(session: AsyncSession, min_minutes: int = 600) -> dict:
+    """Per-position Moneyball distribution for the overview dashboard."""
+    from statistics import median
+
+    out = {}
+    for pos in POSITIONS:
+        scored = await score_players_for_position(session, pos)
+        eligible = [s for s in scored if (s["stat"].minutes_played or 0) >= min_minutes and s["player"] is not None]
+        if not eligible:
+            continue
+        scores = [s["score"] for s in eligible]
+        best = max(eligible, key=lambda s: s["score"])
+        out[pos] = {
+            "players": len(eligible),
+            "median_score": round(median(scores), 1),
+            "max_score": round(max(scores), 1),
+            "top": {
+                "player_id": best["player"].id,
+                "name": best["player"].full_name,
+                "score": best["score"],
+            },
+        }
+    return out

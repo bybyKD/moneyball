@@ -151,3 +151,11 @@ def test_market_value_picks(server):
     assert all(p["score"] > 0 and p["market_value_eur"] > 0 for p in body["picks"])
     ratios = [p["value_ratio"] for p in body["picks"]]
     assert ratios == sorted(ratios, reverse=True)
+
+
+def test_market_position_summary(server):
+    r = httpx.get(f"{BASE}/market/position-summary", timeout=30)
+    assert r.status_code == 200, r.text
+    body = r.json()
+    assert "ST" in body and "GK" in body
+    assert all(0 <= v["median_score"] <= 100 for v in body.values())

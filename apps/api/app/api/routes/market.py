@@ -27,3 +27,10 @@ async def value_picks(
         "count": len(rows),
         "picks": rows,
     }
+
+
+@router.get("/position-summary")
+async def position_summary(min_minutes: int = 600, session: AsyncSession = Depends(get_session)) -> dict:
+    from apps.api.app.services.market import position_summary as _summary
+
+    return await _summary(session, min_minutes)
