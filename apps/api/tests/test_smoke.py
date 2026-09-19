@@ -159,3 +159,21 @@ def test_market_position_summary(server):
     body = r.json()
     assert "ST" in body and "GK" in body
     assert all(0 <= v["median_score"] <= 100 for v in body.values())
+
+
+def test_compare_players(server):
+    p = httpx.get(f"{BASE}/players?limit=2", timeout=5).json()
+    ia, ib = p[0]["id"], p[1]["id"]
+    r = httpx.get(f"{BASE}/compare?player_a={ia}&player_b={ib}", timeout=15)
+    assert r.status_code == 200, r.text
+    body = r.json()
+    assert len(body["players"]) == 2
+    assert body["winner"]["player_id"] in (ia, ib)
+    # auth-required persistence
+    import uuid
+    h = {"Cookie": httpx.post(f"{BASE}/auth/register",
+        json={"email": f"cmp.t.{uuid.uuid4().hex[:6]}@test.io", "password": "demo12345", "display_name": "C"},
+        timeout=5).headers.get("set-cookie", "").split(";")[0]}
+    s = httpx.post(f"{BASE}/compare", json={"player_ids": [ia, ib], "name": "A/B"}, headers=h, timeout=15)
+    assert s.status_code == 201, s.text
+    assert s.json()["result"]["winner"]["player_id"] in (ia, ib)
