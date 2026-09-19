@@ -5,7 +5,7 @@ import Link from "next/link";
 const SECTIONS = [
   { href: "/", label: "Home" },
   { href: "/players", label: "Players" },
-  { href: "/missions", label: "Scouting Missions" },
+  { href: "/scouting", label: "Scouting Missions" },
   { href: "/shortlists", label: "Shortlists" },
   { href: "/market", label: "Market" },
   { href: "/analytics", label: "Analytics" },
